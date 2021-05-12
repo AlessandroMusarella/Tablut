@@ -2,6 +2,8 @@
   <library name="aima-core">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/jar/aima-core.jar!/" />
+      <root url="jar://$PROJECT_DIR$/jar/gson-2.2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/jar/commons-cli-1.4.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
