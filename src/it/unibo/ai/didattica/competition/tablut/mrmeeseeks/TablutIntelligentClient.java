@@ -1,5 +1,6 @@
 package it.unibo.ai.didattica.competition.tablut.mrmeeseeks;
 
+import aima.core.search.adversarial.IterativeDeepeningAlphaBetaSearch;
 import it.unibo.ai.didattica.competition.tablut.client.TablutClient;
 import it.unibo.ai.didattica.competition.tablut.client.TablutRandomClient;
 import it.unibo.ai.didattica.competition.tablut.domain.*;
@@ -13,9 +14,11 @@ import java.util.Random;
 public class TablutIntelligentClient extends TablutClient {
 
     private int game;
+    protected int timeout;
 
     public TablutIntelligentClient(String player, String name, int gameChosen, int timeout, String ipAddress) throws UnknownHostException, IOException {
         super(player, name, timeout, ipAddress);
+        this.timeout = timeout;
         game = gameChosen;
     }
 
@@ -55,7 +58,7 @@ public class TablutIntelligentClient extends TablutClient {
         }
         System.out.println("Selected client: " + args[0]);
 
-        TablutRandomClient client = new TablutRandomClient(role, name, gametype, timeout, ipAddress);
+        TablutIntelligentClient client = new TablutIntelligentClient(role, name, gametype, timeout, ipAddress);
         client.run();
     }
 
@@ -91,12 +94,10 @@ public class TablutIntelligentClient extends TablutClient {
                 // Mio turno
                 if (this.getCurrentState().getTurn().equals(StateTablut.Turn.WHITE)) {
 
-                    Action a = null;
-                    try {
-                        a = new Action("", "", State.Turn.BLACK);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    IterativeDeepeningAlphaBetaSearch<State, Action, State.Turn> search = new IterativeDeepeningAlphaBetaSearch<>(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout);
+
+                    Action a = search.makeDecision(state);
+
                     System.out.println("Mossa scelta: " + a.toString());
                     try {
                         this.write(a);
@@ -130,6 +131,9 @@ public class TablutIntelligentClient extends TablutClient {
                 // Mio turno
                 if (this.getCurrentState().getTurn().equals(StateTablut.Turn.BLACK)) {
 
+                    IterativeDeepeningAlphaBetaSearch<State, Action, State.Turn> search = new IterativeDeepeningAlphaBetaSearch<>(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout);
+
+                    Action a = search.makeDecision(state);
 
                     System.out.println("Mossa scelta: " + a.toString());
                     try {
