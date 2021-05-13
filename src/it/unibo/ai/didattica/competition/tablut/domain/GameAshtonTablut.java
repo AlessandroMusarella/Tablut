@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 import it.unibo.ai.didattica.competition.tablut.exceptions.*;
-import it.unibo.ai.didattica.competition.tablut.mrmeeseeks.Heuristics;
+import it.unibo.ai.didattica.competition.tablut.mrmeeseeks.Heuristic;
 
 /**
  *
@@ -114,6 +114,81 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 			throws BoardException, ActionException, StopException, PawnException, DiagonalException, ClimbingException,
 			ThroneException, OccupitedException, ClimbingCitadelException, CitadelException {
 		this.loggGame.fine(a.toString());
+
+		this.isLegalMove(state, a);
+
+		// se sono arrivato qui, muovo la pedina
+		state = this.movePawn(state, a);
+
+		// a questo punto controllo lo stato per eventuali catture
+		if (state.getTurn().equalsTurn("W")) {
+			state = this.checkCaptureBlack(state, a);
+		} else if (state.getTurn().equalsTurn("B")) {
+			state = this.checkCaptureWhite(state, a);
+		}
+
+		// if something has been captured, clear cache for draws
+		if (this.movesWithutCapturing == 0) {
+			this.drawConditions.clear();
+			this.loggGame.fine("Capture! Draw cache cleared!");
+		}
+
+		// controllo pareggio
+		int trovati = 0;
+		for (State s : drawConditions) {
+
+			System.out.println(s.toString());
+
+			if (s.equals(state)) {
+				// DEBUG: //
+				// System.out.println("UGUALI:");
+				// System.out.println("STATO VECCHIO:\t" + s.toLinearString());
+				// System.out.println("STATO NUOVO:\t" +
+				// state.toLinearString());
+
+				trovati++;
+				if (trovati > repeated_moves_allowed) {
+					state.setTurn(State.Turn.DRAW);
+					this.loggGame.fine("Partita terminata in pareggio per numero di stati ripetuti");
+					break;
+				}
+			} else {
+				// DEBUG: //
+				// System.out.println("DIVERSI:");
+				// System.out.println("STATO VECCHIO:\t" + s.toLinearString());
+				// System.out.println("STATO NUOVO:\t" +
+				// state.toLinearString());
+			}
+		}
+		if (trovati > 0) {
+			this.loggGame.fine("Equal states found: " + trovati);
+		}
+		if (cache_size >= 0 && this.drawConditions.size() > cache_size) {
+			this.drawConditions.remove(0);
+		}
+		this.drawConditions.add(state.clone());
+
+		this.loggGame.fine("Current draw cache size: " + this.drawConditions.size());
+
+		this.loggGame.fine("Stato:\n" + state.toString());
+		System.out.println("Stato:\n" + state.toString());
+
+		return state;
+	}
+
+	private boolean isLegalMoveBool(State state, Action a) {
+		try {
+			this.isLegalMove(state, a);
+			return true;
+		} catch(BoardException | ActionException | StopException | PawnException | DiagonalException | ClimbingException |
+				ThroneException | OccupitedException | ClimbingCitadelException | CitadelException e) {
+			return false;
+		}
+	}
+
+	private void isLegalMove(State state, Action a)
+			throws BoardException, ActionException, StopException, PawnException, DiagonalException, ClimbingException,
+			ThroneException, OccupitedException, ClimbingCitadelException, CitadelException {
 		// controllo la mossa
 		if (a.getTo().length() != 2 || a.getFrom().length() != 2) {
 			this.loggGame.warning("Formato mossa errato");
@@ -265,64 +340,6 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 				}
 			}
 		}
-
-		// se sono arrivato qui, muovo la pedina
-		state = this.movePawn(state, a);
-
-		// a questo punto controllo lo stato per eventuali catture
-		if (state.getTurn().equalsTurn("W")) {
-			state = this.checkCaptureBlack(state, a);
-		} else if (state.getTurn().equalsTurn("B")) {
-			state = this.checkCaptureWhite(state, a);
-		}
-
-		// if something has been captured, clear cache for draws
-		if (this.movesWithutCapturing == 0) {
-			this.drawConditions.clear();
-			this.loggGame.fine("Capture! Draw cache cleared!");
-		}
-
-		// controllo pareggio
-		int trovati = 0;
-		for (State s : drawConditions) {
-
-			System.out.println(s.toString());
-
-			if (s.equals(state)) {
-				// DEBUG: //
-				// System.out.println("UGUALI:");
-				// System.out.println("STATO VECCHIO:\t" + s.toLinearString());
-				// System.out.println("STATO NUOVO:\t" +
-				// state.toLinearString());
-
-				trovati++;
-				if (trovati > repeated_moves_allowed) {
-					state.setTurn(State.Turn.DRAW);
-					this.loggGame.fine("Partita terminata in pareggio per numero di stati ripetuti");
-					break;
-				}
-			} else {
-				// DEBUG: //
-				// System.out.println("DIVERSI:");
-				// System.out.println("STATO VECCHIO:\t" + s.toLinearString());
-				// System.out.println("STATO NUOVO:\t" +
-				// state.toLinearString());
-			}
-		}
-		if (trovati > 0) {
-			this.loggGame.fine("Equal states found: " + trovati);
-		}
-		if (cache_size >= 0 && this.drawConditions.size() > cache_size) {
-			this.drawConditions.remove(0);
-		}
-		this.drawConditions.add(state.clone());
-
-		this.loggGame.fine("Current draw cache size: " + this.drawConditions.size());
-
-		this.loggGame.fine("Stato:\n" + state.toString());
-		System.out.println("Stato:\n" + state.toString());
-
-		return state;
 	}
 
 	private State checkCaptureWhite(State state, Action a) {
@@ -768,7 +785,20 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 	}
 
 	public enum Direction {
-		UP, DOWN, LEFT, RIGHT;
+		UP(-1, 0), DOWN(1, 0), LEFT(0, -1), RIGHT(0, 1);
+		private int xdiff, ydiff;
+		Direction(int xdiff, int ydiff) {
+			this.xdiff = xdiff;
+			this.ydiff = ydiff;
+		}
+
+		public int getXdiff() {
+			return xdiff;
+		}
+
+		public int getYdiff() {
+			return ydiff;
+		}
 	}
 
 	/**
@@ -791,7 +821,7 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 						for(int numBoxCrossed = 1; numBoxCrossed < state.getBoard().length && !error; numBoxCrossed++) {
 							try {
 								Action action = getActionFromIntegers(state, i, j, dir, numBoxCrossed);
-								if(isLegalMove(state, action)) {
+								if(isLegalMoveBool(state, action)) {
 									allActions.add(action);
 								} else {
 									error = true;
@@ -807,16 +837,16 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 		return allActions;
 	}
 
-	private Action getActionFromIntegers(State state, int i, int j, Direction dir, int numBoxCrossed) throws IOException {
+	public Action getActionFromIntegers(State state, int i, int j, Direction dir, int numBoxCrossed) throws IOException {
 		String from = state.getBox(i, j);
 		int di = i;
 		int dj = j;
 		switch (dir) {
 			case UP:
-				di = i + numBoxCrossed;
+				di = i - numBoxCrossed;
 				break;
 			case DOWN:
-				di = i - numBoxCrossed;
+				di = i + numBoxCrossed;
 				break;
 			case LEFT:
 				dj = j - numBoxCrossed;
@@ -830,7 +860,7 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 		return new Action(from, to, state.getTurn());
 	}
 
-	private boolean isLegalMove(State state, Action action) {
+	private boolean isLegalMoveCustom(State state, Action action) {
 		int x0 = action.getColumnFrom();
 		int y0 = action.getRowFrom();
 		int xf = action.getColumnTo();
@@ -891,8 +921,8 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 
 
 		// if it isn't a terminal state
-		Heuristics heuristics = new Heuristics(state, turn);
+		Heuristic heuristic = new Heuristic(state, turn);
 
-		return  heuristics.evaluateState();
+		return  heuristic.evaluateState();
 	}
 }

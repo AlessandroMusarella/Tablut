@@ -94,7 +94,7 @@ public class TablutIntelligentClient extends TablutClient {
                 // Mio turno
                 if (this.getCurrentState().getTurn().equals(StateTablut.Turn.WHITE)) {
 
-                    IterativeDeepeningAlphaBetaSearch<State, Action, State.Turn> search = new IterativeDeepeningAlphaBetaSearch<>(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout);
+                    IterativeDeepeningAlphaBetaSearchWithHeuristic search = new IterativeDeepeningAlphaBetaSearchWithHeuristic(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout);
 
                     Action a = search.makeDecision(state);
 
