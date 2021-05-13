@@ -169,6 +169,10 @@ public class Heuristic {
         return num;
     }
 
+    /*
+    ------------- KingPosition ----------------
+     */
+
     public class KingPosition {
         private final int x, y;
         public KingPosition(int x, int y) {
