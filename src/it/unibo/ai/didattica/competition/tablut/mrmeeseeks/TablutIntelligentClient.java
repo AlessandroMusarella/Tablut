@@ -2,24 +2,18 @@ package it.unibo.ai.didattica.competition.tablut.mrmeeseeks;
 
 import aima.core.search.adversarial.IterativeDeepeningAlphaBetaSearch;
 import it.unibo.ai.didattica.competition.tablut.client.TablutClient;
-import it.unibo.ai.didattica.competition.tablut.client.TablutRandomClient;
 import it.unibo.ai.didattica.competition.tablut.domain.*;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 public class TablutIntelligentClient extends TablutClient {
 
-    private int game;
     protected int timeout;
 
     public TablutIntelligentClient(String player, String name, int gameChosen, int timeout, String ipAddress) throws UnknownHostException, IOException {
         super(player, name, timeout, ipAddress);
         this.timeout = timeout;
-        game = gameChosen;
     }
 
     public TablutIntelligentClient(String player, String name, int timeout, String ipAddress) throws UnknownHostException, IOException {
@@ -94,7 +88,7 @@ public class TablutIntelligentClient extends TablutClient {
                 // Mio turno
                 if (this.getCurrentState().getTurn().equals(StateTablut.Turn.WHITE)) {
 
-                    IterativeDeepeningAlphaBetaSearchWithHeuristic search = new IterativeDeepeningAlphaBetaSearchWithHeuristic(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout - 1);
+                    IterativeDeepeningAlphaBetaSearchWithHeuristic search = new IterativeDeepeningAlphaBetaSearchWithHeuristic(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout - 2);
 
                     Action a = search.makeDecision(state);
 
@@ -131,7 +125,7 @@ public class TablutIntelligentClient extends TablutClient {
                 // Mio turno
                 if (this.getCurrentState().getTurn().equals(StateTablut.Turn.BLACK)) {
 
-                    IterativeDeepeningAlphaBetaSearch<State, Action, State.Turn> search = new IterativeDeepeningAlphaBetaSearch<>(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout);
+                    IterativeDeepeningAlphaBetaSearchWithHeuristic search = new IterativeDeepeningAlphaBetaSearchWithHeuristic(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout - 2);
 
                     Action a = search.makeDecision(state);
 
