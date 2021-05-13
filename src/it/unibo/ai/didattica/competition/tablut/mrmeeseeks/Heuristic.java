@@ -9,10 +9,20 @@ public class Heuristic {
     private State.Turn turn;
     private KingPosition kingPosition = null;
 
-    private final static int KING_DISTANCE  = 0;
-    private final static int WB_RATIO = 1;
-    private final double[] blackWeights = {1, 1, 1};
-    private final double[] whiteWeights = {1, 1, 1};
+    private final static int NUM_BLACK = 16;
+    private final static int NUM_WHITE = 8;
+
+    // White weights
+    private final double[] whiteWeights = {15, 25, 5};
+    private final static int WHITE_REMAINING  = 0;
+    private final static int BLACK_EATEN = 1;
+    private final static int MOVES_TO_ESCAPE = 2;
+
+    // White weights
+    private final double[] blackWeights = {20, 15, 19};
+    private final static int BLACK_REMAINING  = 0;
+    private final static int WHITE_EATEN = 1;
+    private final static int PROTECT_ESCAPES = 2;
 
 
     public Heuristic(State state, State.Turn turn) {
@@ -27,61 +37,53 @@ public class Heuristic {
             return evaluateStateBlack();
     }
 
-    private double evaluateStateBlack() {
-        return 0;
-    }
-
     private double evaluateStateWhite() {
-        return 0;
+        double value = 0;
+
+        value += whiteWeights[WHITE_REMAINING] * getWhiteRemaining();
+        value += whiteWeights[BLACK_EATEN] * getBlackEaten();
+        value += whiteWeights[MOVES_TO_ESCAPE] * kingMovesToEscape();
+
+        return value;
     }
 
-    public double getNumberPawns() {
-        int black = 0, white = 0;
+    private double evaluateStateBlack() {
+        double value = 0;
+
+        value += blackWeights[BLACK_REMAINING] * getBlackRemaining();
+        value += blackWeights[WHITE_EATEN] * getWhiteEaten();
+        value += blackWeights[PROTECT_ESCAPES] * getBlackProtectingEscapes();
+
+        return value;
+    }
+
+
+    /*
+    ------------------- WHITE HEURISTIC -------------------
+     */
+
+    public int getWhiteRemaining() {
+        int white = 0;
         for(int i = 0; i < this.state.getBoard().length; i++) {
-            for(int j = 0; j < this.state.getBoard().length; j++) {
-                if(this.state.getPawn(i, j).equals(State.Pawn.WHITE))
+            for (int j = 0; j < this.state.getBoard().length; j++) {
+                if (this.state.getPawn(i, j).equals(State.Pawn.WHITE))
                     white++;
-                if(this.state.getPawn(i, j).equals(State.Pawn.BLACK))
-                    black++;
-                if(this.state.getPawn(i, j).equals(State.Pawn.KING))
-                    this.kingPosition = new KingPosition(i, j);
             }
         }
-        return 2 * white - black;
+
+        return white;
     }
 
-    public double pawnsNearKing() {
-        if(this.kingPosition == null)
-            throw new IllegalStateException("King position must be initialized.");
-
-        //if the king is in the castle or adjacent to the castle it must be surrounded by 4/3 black pawns
-        //otherwise 2 black pawn or 1 if it is near to a camp
-
-        //we must avoid that the king, to try to maintain his 4 free side, does not leave the castle
-
-        //give a bonus point if in some side there is a white pawn and therefore it is safe on the other side?
-        int numBlack = 0;
-        int numWhite = 0;
-        for(GameAshtonTablut.Direction dir: GameAshtonTablut.Direction.values()) {
-            int newx = this.kingPosition.getX() + dir.getXdiff();
-            int newy = this.kingPosition.getY() + dir.getYdiff();
-            if(newx > 8 || newx < 0 || newy > 8 || newy < 0) {//I'm out of the board
-
-            } else {
-                State.Pawn pawn = this.state.getPawn(newx, newy);
-                if(pawn.equals(State.Pawn.BLACK))
-                    numBlack++;
-                if(pawn.equals(State.Pawn.WHITE))
-                    numWhite++;
+    public int getBlackEaten() {
+        int black = 0;
+        for(int i = 0; i < this.state.getBoard().length; i++) {
+            for (int j = 0; j < this.state.getBoard().length; j++) {
+                if (this.state.getPawn(i, j).equals(State.Pawn.BLACK))
+                    black++;
             }
         }
 
-
-        if(this.kingPosition.isNearThrone()) { //includes king in the throne
-            return 0.0;
-        } else {
-            return 0.0;
-        }
+        return NUM_BLACK - black;
     }
 
     public int kingMovesToEscape() {
@@ -159,7 +161,72 @@ public class Heuristic {
         return cont;
     }
 
-    public double blackProtectEscapes() {
+    public double pawnsNearKing() {
+        if(this.kingPosition == null)
+            throw new IllegalStateException("King position must be initialized.");
+
+        //if the king is in the castle or adjacent to the castle it must be surrounded by 4/3 black pawns
+        //otherwise 2 black pawn or 1 if it is near to a camp
+
+        //we must avoid that the king, to try to maintain his 4 free side, does not leave the castle
+
+        //give a bonus point if in some side there is a white pawn and therefore it is safe on the other side?
+        int numBlack = 0;
+        int numWhite = 0;
+        for(GameAshtonTablut.Direction dir: GameAshtonTablut.Direction.values()) {
+            int newx = this.kingPosition.getX() + dir.getXdiff();
+            int newy = this.kingPosition.getY() + dir.getYdiff();
+            if(newx > 8 || newx < 0 || newy > 8 || newy < 0) {//I'm out of the board
+
+            } else {
+                State.Pawn pawn = this.state.getPawn(newx, newy);
+                if(pawn.equals(State.Pawn.BLACK))
+                    numBlack++;
+                if(pawn.equals(State.Pawn.WHITE))
+                    numWhite++;
+            }
+        }
+
+
+        if(this.kingPosition.isNearThrone()) { //includes king in the throne
+            return 0.0;
+        } else {
+            return 0.0;
+        }
+    }
+
+    /*
+    ------------------- BLACK HEURISTIC -------------------
+     */
+
+    public int getBlackRemaining() {
+        int black = 0;
+        for(int i = 0; i < this.state.getBoard().length; i++) {
+            for (int j = 0; j < this.state.getBoard().length; j++) {
+                if (this.state.getPawn(i, j).equals(State.Pawn.BLACK))
+                    black++;
+            }
+        }
+
+        return black;
+    }
+
+    public int getWhiteEaten() {
+        int white = 0;
+        for(int i = 0; i < this.state.getBoard().length; i++) {
+            for (int j = 0; j < this.state.getBoard().length; j++) {
+                if (this.state.getPawn(i, j).equals(State.Pawn.WHITE))
+                    white++;
+            }
+        }
+
+        return NUM_WHITE - white;
+    }
+
+
+
+
+    public double getBlackProtectingEscapes() {
         int[][] protectPositions = {{1, 2}, {2, 1}, {6, 1}, {7, 2}, {1, 6}, {2, 7}, {6, 7}, {7, 6}};
         int num = 0;
         for(int[] position : protectPositions) {
