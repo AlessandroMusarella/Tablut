@@ -86,16 +86,74 @@ public class Heuristic {
 
     public int kingMovesToEscape() {
         int cont = 0;
+
         if(this.kingPosition == null)
             throw new IllegalStateException("King position must be initialized.");
+
         if (!kingPosition.isNearThrone()){
             int xK = kingPosition.getX();
             int yK = kingPosition.getY();
-            if (xK >= 3 && xK <= 5){    //safe row
-                for(int i = 0; i<9; i++){
+            int occupiedPositionsDOWN = -1;
+            int occupiedPositionsUP = -1;
+            int occupiedPositionsLEFT = -1;
+            int occupiedPositionsRIGHT = -1;
 
+            if (!(xK >= 3 && xK <= 5) && !(yK >= 3 && yK <= 5)){        //no safe position
+                occupiedPositionsDOWN = 0;
+                occupiedPositionsUP = 0;
+                occupiedPositionsLEFT = 0;
+                occupiedPositionsRIGHT = 0;
+                for (int i = 0; i < yK; i++){       //count positions occupied above the king
+                    if (!state.getPawn(xK, i).equals(State.Pawn.EMPTY))
+                        occupiedPositionsUP++;
+                }
+                for(int i = state.getBoard().length; i > yK; i--){      //count positions occupied under the king
+                    if (!state.getPawn(xK, i).equals(State.Pawn.EMPTY))
+                        occupiedPositionsDOWN++;
+                }
+                for (int i = 0; i < xK; i++){       //count positions occupied to the left of the king
+                    if (!state.getPawn(i, yK).equals(State.Pawn.EMPTY))
+                        occupiedPositionsLEFT++;
+                }
+                for(int i = state.getBoard().length; i < xK; i--){      //count positions occupied to the right of the king
+                    if (!state.getPawn(i, yK).equals(State.Pawn.EMPTY))
+                        occupiedPositionsRIGHT++;
                 }
             }
+            if (xK >= 3 && xK <= 5){        //safe row
+                occupiedPositionsDOWN = 0;
+                occupiedPositionsUP = 0;
+                for (int i = 0; i < yK; i++){       //count positions occupied above the king
+                    if (!state.getPawn(xK, i).equals(State.Pawn.EMPTY))
+                        occupiedPositionsUP++;
+                }
+                for(int i = state.getBoard().length; i > yK; i--){      //count positions occupied under the king
+                    if (!state.getPawn(xK, i).equals(State.Pawn.EMPTY))
+                        occupiedPositionsDOWN++;
+                }
+            }
+            if(yK >= 3 && yK <= 5) {        //safe col
+                occupiedPositionsLEFT = 0;
+                occupiedPositionsRIGHT = 0;
+                for (int i = 0; i < xK; i++){       //count positions occupied to the left of the king
+                    if (!state.getPawn(i, yK).equals(State.Pawn.EMPTY))
+                        occupiedPositionsLEFT++;
+                }
+                for(int i = state.getBoard().length; i < xK; i--){      //count positions occupied to the right of the king
+                    if (!state.getPawn(i, yK).equals(State.Pawn.EMPTY))
+                        occupiedPositionsRIGHT++;
+                }
+            }
+
+            if (occupiedPositionsDOWN == 0)
+                cont++;
+            if (occupiedPositionsUP == 0)
+                cont++;
+            if (occupiedPositionsLEFT == 0)
+                cont++;
+            if (occupiedPositionsRIGHT == 0)
+                cont++;
+
         }
 
         return cont;
