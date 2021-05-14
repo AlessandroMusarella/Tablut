@@ -65,8 +65,8 @@ public class Heuristic {
     ------------------- WHITE HEURISTIC -------------------
      */
 
-    public int getWhiteRemaining() {
-        int white = 0;
+    public double getWhiteRemaining() {
+        double white = 0;
         for(int i = 0; i < this.state.getBoard().length; i++) {
             for (int j = 0; j < this.state.getBoard().length; j++) {
                 if (this.state.getPawn(i, j).equals(State.Pawn.WHITE))
@@ -76,11 +76,11 @@ public class Heuristic {
             }
         }
 
-        return white;
+        return white / NUM_WHITE;
     }
 
-    public int getBlackEaten() {
-        int black = 0;
+    public double getBlackEaten() {
+        double black = 0;
         for(int i = 0; i < this.state.getBoard().length; i++) {
             for (int j = 0; j < this.state.getBoard().length; j++) {
                 if (this.state.getPawn(i, j).equals(State.Pawn.BLACK))
@@ -90,7 +90,7 @@ public class Heuristic {
             }
         }
 
-        return NUM_BLACK - black;
+        return (NUM_BLACK - black) / NUM_BLACK;
     }
 
     public int kingMovesToEscape() {
@@ -231,8 +231,8 @@ public class Heuristic {
     ------------------- BLACK HEURISTIC -------------------
      */
 
-    public int getBlackRemaining() {
-        int black = 0;
+    public double getBlackRemaining() {
+        double black = 0;
         for(int i = 0; i < this.state.getBoard().length; i++) {
             for (int j = 0; j < this.state.getBoard().length; j++) {
                 if (this.state.getPawn(i, j).equals(State.Pawn.BLACK))
@@ -240,11 +240,11 @@ public class Heuristic {
             }
         }
 
-        return black;
+        return black / NUM_BLACK;
     }
 
-    public int getWhiteEaten() {
-        int white = 0;
+    public double getWhiteEaten() {
+        double white = 0;
         for(int i = 0; i < this.state.getBoard().length; i++) {
             for (int j = 0; j < this.state.getBoard().length; j++) {
                 if (this.state.getPawn(i, j).equals(State.Pawn.WHITE))
@@ -252,7 +252,7 @@ public class Heuristic {
             }
         }
 
-        return NUM_WHITE - white;
+        return (NUM_WHITE - white) / NUM_WHITE;
     }
 
 
