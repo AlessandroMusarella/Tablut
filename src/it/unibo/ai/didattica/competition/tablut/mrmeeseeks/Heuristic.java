@@ -13,17 +13,18 @@ public class Heuristic {
     private final static int NUM_WHITE = 8;
 
     // White weights
-    private final double[] whiteWeights = {15, 25, 5};
+    private final double[] whiteWeights = {30, 25, 5, 10};
     private final static int WHITE_REMAINING  = 0;
     private final static int BLACK_EATEN = 1;
     private final static int MOVES_TO_ESCAPE = 2;
+    //private final static int PAWNS_NEAR_KING = 3;
 
-    // White weights
-    private final double[] blackWeights = {20, 15, 19};
+    // Black weights
+    private final double[] blackWeights = {15, 35, 20, 10};
     private final static int BLACK_REMAINING  = 0;
     private final static int WHITE_EATEN = 1;
     private final static int PROTECT_ESCAPES = 2;
-
+    private final static int PAWNS_NEAR_KING = 3;
 
     public Heuristic(State state, State.Turn turn) {
         this.state = state;
@@ -43,6 +44,7 @@ public class Heuristic {
         value += whiteWeights[WHITE_REMAINING] * getWhiteRemaining();
         value += whiteWeights[BLACK_EATEN] * getBlackEaten();
         value += whiteWeights[MOVES_TO_ESCAPE] * kingMovesToEscape();
+        value += whiteWeights[PAWNS_NEAR_KING] * pawnsNearKing(true);
 
         return value;
     }
@@ -53,6 +55,7 @@ public class Heuristic {
         value += blackWeights[BLACK_REMAINING] * getBlackRemaining();
         value += blackWeights[WHITE_EATEN] * getWhiteEaten();
         value += blackWeights[PROTECT_ESCAPES] * getBlackProtectingEscapes();
+        value += blackWeights[PAWNS_NEAR_KING] * pawnsNearKing(false);
 
         return value;
     }
@@ -121,7 +124,7 @@ public class Heuristic {
                     if (!state.getPawn(i, yK).equals(State.Pawn.EMPTY))
                         occupiedPositionsLEFT++;
                 }
-                for(int i = state.getBoard().length - 1; i < xK; i--){      //count positions occupied to the right of the king
+                for(int i = state.getBoard().length - 1; i > xK; i--){      //count positions occupied to the right of the king
                     if (!state.getPawn(i, yK).equals(State.Pawn.EMPTY))
                         occupiedPositionsRIGHT++;
                 }
@@ -145,7 +148,7 @@ public class Heuristic {
                     if (!state.getPawn(i, yK).equals(State.Pawn.EMPTY))
                         occupiedPositionsLEFT++;
                 }
-                for(int i = state.getBoard().length - 1; i < xK; i--){      //count positions occupied to the right of the king
+                for(int i = state.getBoard().length - 1; i > xK; i--){      //count positions occupied to the right of the king
                     if (!state.getPawn(i, yK).equals(State.Pawn.EMPTY))
                         occupiedPositionsRIGHT++;
                 }
@@ -165,7 +168,19 @@ public class Heuristic {
         return cont;
     }
 
-    public double pawnsNearKing() {
+    public boolean isCitadel(int x, int y) {
+        int[][] citadels = {{0, 3}, {0, 4}, {0, 5}, {1, 4}, {3, 0}, {4, 0}, {5, 0}, {4, 1}, {8, 3}, {8, 4},
+                {8, 5}, {7, 4}, {3, 8}, {4, 8}, {5, 8}, {4, 7}};
+
+        for (int[] citadel : citadels) {
+            if (citadel[0] == x && citadel[1] == y)
+                return true;
+        }
+        return false;
+    }
+
+
+    public double pawnsNearKing(boolean isWhitePlaying) {
         if(this.kingPosition == null)
             throw new IllegalStateException("King position must be initialized.");
 
@@ -177,6 +192,7 @@ public class Heuristic {
         //give a bonus point if in some side there is a white pawn and therefore it is safe on the other side?
         int numBlack = 0;
         int numWhite = 0;
+        int numCitadels = 0;
         for(GameAshtonTablut.Direction dir: GameAshtonTablut.Direction.values()) {
             int newx = this.kingPosition.getX() + dir.getXdiff();
             int newy = this.kingPosition.getY() + dir.getYdiff();
@@ -188,14 +204,26 @@ public class Heuristic {
                     numBlack++;
                 if(pawn.equals(State.Pawn.WHITE))
                     numWhite++;
+                if(this.isCitadel(newx, newy))
+                    numCitadels++;
             }
         }
 
+        //if white player is playing we return 1 if it is free in all sides
+        //if black player is playing we return 1 if it is surrounded by all sides
 
         if(this.kingPosition.isNearThrone()) { //includes king in the throne
-            return 0.0;
+            if(this.kingPosition.getX() == 4 && this.kingPosition.getY() == 4)
+                numBlack++; //so when it is near the throne and only requires 3 pawns to be eaten the result is the same
+            if(isWhitePlaying)
+                return (3 - numBlack)/3.0;
+            else//black playing
+                return numBlack/3.0;
         } else {
-            return 0.0;
+            if(isWhitePlaying)
+                return (2 - numBlack - numCitadels)/2.0;
+            else//black playing
+                return (numBlack + numCitadels)/2.0;
         }
     }
 
