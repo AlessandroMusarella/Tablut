@@ -115,7 +115,7 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 			ThroneException, OccupitedException, ClimbingCitadelException, CitadelException {
 		this.loggGame.fine(a.toString());
 
-		this.isLegalMove(state, a);
+		this.isLegalMove(state, a, true);
 
 		// se sono arrivato qui, muovo la pedina
 		state = this.movePawn(state, a);
@@ -178,7 +178,7 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 
 	private boolean isLegalMoveBool(State state, Action a) {
 		try {
-			this.isLegalMove(state, a);
+			this.isLegalMove(state, a, false);
 			return true;
 		} catch(BoardException | ActionException | StopException | PawnException | DiagonalException | ClimbingException |
 				ThroneException | OccupitedException | ClimbingCitadelException | CitadelException e) {
@@ -186,7 +186,7 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 		}
 	}
 
-	private void isLegalMove(State state, Action a)
+	private void isLegalMove(State state, Action a, boolean strictChecking)
 			throws BoardException, ActionException, StopException, PawnException, DiagonalException, ClimbingException,
 			ThroneException, OccupitedException, ClimbingCitadelException, CitadelException {
 		// controllo la mossa
@@ -238,104 +238,105 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 			}
 
 		}
-
-		// controllo se cerco di stare fermo
-		if (rowFrom == rowTo && columnFrom == columnTo) {
-			//this.loggGame.warning("Nessuna mossa");
-			throw new StopException(a);
-		}
-
-		// controllo se sto muovendo una pedina giusta
-		if (state.getTurn().equalsTurn(State.Turn.WHITE.toString())) {
-			if (!state.getPawn(rowFrom, columnFrom).equalsPawn("W")
-					&& !state.getPawn(rowFrom, columnFrom).equalsPawn("K")) {
-				//this.loggGame.warning("Giocatore " + a.getTurn() + " cerca di muovere una pedina avversaria");
-				throw new PawnException(a);
+		if(strictChecking) {
+			// controllo se cerco di stare fermo
+			if (rowFrom == rowTo && columnFrom == columnTo) {
+				//this.loggGame.warning("Nessuna mossa");
+				throw new StopException(a);
 			}
-		}
-		if (state.getTurn().equalsTurn(State.Turn.BLACK.toString())) {
-			if (!state.getPawn(rowFrom, columnFrom).equalsPawn("B")) {
-				//this.loggGame.warning("Giocatore " + a.getTurn() + " cerca di muovere una pedina avversaria");
-				throw new PawnException(a);
+
+			// controllo se sto muovendo una pedina giusta
+			if (state.getTurn().equalsTurn(State.Turn.WHITE.toString())) {
+				if (!state.getPawn(rowFrom, columnFrom).equalsPawn("W")
+						&& !state.getPawn(rowFrom, columnFrom).equalsPawn("K")) {
+					//this.loggGame.warning("Giocatore " + a.getTurn() + " cerca di muovere una pedina avversaria");
+					throw new PawnException(a);
+				}
 			}
-		}
+			if (state.getTurn().equalsTurn(State.Turn.BLACK.toString())) {
+				if (!state.getPawn(rowFrom, columnFrom).equalsPawn("B")) {
+					//this.loggGame.warning("Giocatore " + a.getTurn() + " cerca di muovere una pedina avversaria");
+					throw new PawnException(a);
+				}
+			}
 
-		// controllo di non muovere in diagonale
-		if (rowFrom != rowTo && columnFrom != columnTo) {
-			//this.loggGame.warning("Mossa in diagonale");
-			throw new DiagonalException(a);
-		}
+			// controllo di non muovere in diagonale
+			if (rowFrom != rowTo && columnFrom != columnTo) {
+				//this.loggGame.warning("Mossa in diagonale");
+				throw new DiagonalException(a);
+			}
 
-		// controllo di non scavalcare pedine
-		if (rowFrom == rowTo) {
-			if (columnFrom > columnTo) {
-				for (int i = columnTo; i < columnFrom; i++) {
-					if (!state.getPawn(rowFrom, i).equalsPawn(State.Pawn.EMPTY.toString())) {
-						if (state.getPawn(rowFrom, i).equalsPawn(State.Pawn.THRONE.toString())) {
-							//this.loggGame.warning("Mossa che scavalca il trono");
-							throw new ClimbingException(a);
-						} else {
-							//this.loggGame.warning("Mossa che scavalca una pedina");
-							throw new ClimbingException(a);
+			// controllo di non scavalcare pedine
+			if (rowFrom == rowTo) {
+				if (columnFrom > columnTo) {
+					for (int i = columnTo; i < columnFrom; i++) {
+						if (!state.getPawn(rowFrom, i).equalsPawn(State.Pawn.EMPTY.toString())) {
+							if (state.getPawn(rowFrom, i).equalsPawn(State.Pawn.THRONE.toString())) {
+								//this.loggGame.warning("Mossa che scavalca il trono");
+								throw new ClimbingException(a);
+							} else {
+								//this.loggGame.warning("Mossa che scavalca una pedina");
+								throw new ClimbingException(a);
+							}
+						}
+						if (this.citadels.contains(state.getBox(rowFrom, i))
+								&& !this.citadels.contains(state.getBox(a.getRowFrom(), a.getColumnFrom()))) {
+							//this.loggGame.warning("Mossa che scavalca una citadel");
+							throw new ClimbingCitadelException(a);
 						}
 					}
-					if (this.citadels.contains(state.getBox(rowFrom, i))
-							&& !this.citadels.contains(state.getBox(a.getRowFrom(), a.getColumnFrom()))) {
-						//this.loggGame.warning("Mossa che scavalca una citadel");
-						throw new ClimbingCitadelException(a);
+				} else {
+					for (int i = columnFrom + 1; i <= columnTo; i++) {
+						if (!state.getPawn(rowFrom, i).equalsPawn(State.Pawn.EMPTY.toString())) {
+							if (state.getPawn(rowFrom, i).equalsPawn(State.Pawn.THRONE.toString())) {
+								//this.loggGame.warning("Mossa che scavalca il trono");
+								throw new ClimbingException(a);
+							} else {
+								//this.loggGame.warning("Mossa che scavalca una pedina");
+								throw new ClimbingException(a);
+							}
+						}
+						if (this.citadels.contains(state.getBox(rowFrom, i))
+								&& !this.citadels.contains(state.getBox(a.getRowFrom(), a.getColumnFrom()))) {
+							//this.loggGame.warning("Mossa che scavalca una citadel");
+							throw new ClimbingCitadelException(a);
+						}
 					}
 				}
 			} else {
-				for (int i = columnFrom + 1; i <= columnTo; i++) {
-					if (!state.getPawn(rowFrom, i).equalsPawn(State.Pawn.EMPTY.toString())) {
-						if (state.getPawn(rowFrom, i).equalsPawn(State.Pawn.THRONE.toString())) {
-							//this.loggGame.warning("Mossa che scavalca il trono");
-							throw new ClimbingException(a);
-						} else {
-							//this.loggGame.warning("Mossa che scavalca una pedina");
-							throw new ClimbingException(a);
+				if (rowFrom > rowTo) {
+					for (int i = rowTo; i < rowFrom; i++) {
+						if (!state.getPawn(i, columnFrom).equalsPawn(State.Pawn.EMPTY.toString())) {
+							if (state.getPawn(i, columnFrom).equalsPawn(State.Pawn.THRONE.toString())) {
+								//this.loggGame.warning("Mossa che scavalca il trono");
+								throw new ClimbingException(a);
+							} else {
+								//this.loggGame.warning("Mossa che scavalca una pedina");
+								throw new ClimbingException(a);
+							}
+						}
+						if (this.citadels.contains(state.getBox(i, columnFrom))
+								&& !this.citadels.contains(state.getBox(a.getRowFrom(), a.getColumnFrom()))) {
+							//this.loggGame.warning("Mossa che scavalca una citadel");
+							throw new ClimbingCitadelException(a);
 						}
 					}
-					if (this.citadels.contains(state.getBox(rowFrom, i))
-							&& !this.citadels.contains(state.getBox(a.getRowFrom(), a.getColumnFrom()))) {
-						//this.loggGame.warning("Mossa che scavalca una citadel");
-						throw new ClimbingCitadelException(a);
-					}
-				}
-			}
-		} else {
-			if (rowFrom > rowTo) {
-				for (int i = rowTo; i < rowFrom; i++) {
-					if (!state.getPawn(i, columnFrom).equalsPawn(State.Pawn.EMPTY.toString())) {
-						if (state.getPawn(i, columnFrom).equalsPawn(State.Pawn.THRONE.toString())) {
-							//this.loggGame.warning("Mossa che scavalca il trono");
-							throw new ClimbingException(a);
-						} else {
-							//this.loggGame.warning("Mossa che scavalca una pedina");
-							throw new ClimbingException(a);
+				} else {
+					for (int i = rowFrom + 1; i <= rowTo; i++) {
+						if (!state.getPawn(i, columnFrom).equalsPawn(State.Pawn.EMPTY.toString())) {
+							if (state.getPawn(i, columnFrom).equalsPawn(State.Pawn.THRONE.toString())) {
+								//this.loggGame.warning("Mossa che scavalca il trono");
+								throw new ClimbingException(a);
+							} else {
+								//this.loggGame.warning("Mossa che scavalca una pedina");
+								throw new ClimbingException(a);
+							}
 						}
-					}
-					if (this.citadels.contains(state.getBox(i, columnFrom))
-							&& !this.citadels.contains(state.getBox(a.getRowFrom(), a.getColumnFrom()))) {
-						//this.loggGame.warning("Mossa che scavalca una citadel");
-						throw new ClimbingCitadelException(a);
-					}
-				}
-			} else {
-				for (int i = rowFrom + 1; i <= rowTo; i++) {
-					if (!state.getPawn(i, columnFrom).equalsPawn(State.Pawn.EMPTY.toString())) {
-						if (state.getPawn(i, columnFrom).equalsPawn(State.Pawn.THRONE.toString())) {
-							//this.loggGame.warning("Mossa che scavalca il trono");
-							throw new ClimbingException(a);
-						} else {
-							//this.loggGame.warning("Mossa che scavalca una pedina");
-							throw new ClimbingException(a);
+						if (this.citadels.contains(state.getBox(i, columnFrom))
+								&& !this.citadels.contains(state.getBox(a.getRowFrom(), a.getColumnFrom()))) {
+							//this.loggGame.warning("Mossa che scavalca una citadel");
+							throw new ClimbingCitadelException(a);
 						}
-					}
-					if (this.citadels.contains(state.getBox(i, columnFrom))
-							&& !this.citadels.contains(state.getBox(a.getRowFrom(), a.getColumnFrom()))) {
-						//this.loggGame.warning("Mossa che scavalca una citadel");
-						throw new ClimbingCitadelException(a);
 					}
 				}
 			}
