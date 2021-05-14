@@ -9,6 +9,9 @@ public class Heuristic {
     private State.Turn turn;
     private KingPosition kingPosition = null;
 
+    private double numWhiteOnBoard = 0; //double to force double division
+    private double numBlackOnBoard = 0;
+
     private final static int NUM_BLACK = 16;
     private final static int NUM_WHITE = 8;
 
@@ -41,6 +44,8 @@ public class Heuristic {
     private double evaluateStateWhite() {
         double value = 0;
 
+        calculateNumPawns();
+
         value += whiteWeights[WHITE_REMAINING] * getWhiteRemaining();
         value += whiteWeights[BLACK_EATEN] * getBlackEaten();
         value += whiteWeights[MOVES_TO_ESCAPE] * kingMovesToEscape();
@@ -52,6 +57,8 @@ public class Heuristic {
     private double evaluateStateBlack() {
         double value = 0;
 
+        calculateNumPawns();
+
         value += blackWeights[BLACK_REMAINING] * getBlackRemaining();
         value += blackWeights[WHITE_EATEN] * getWhiteEaten();
         value += blackWeights[PROTECT_ESCAPES] * getBlackProtectingEscapes();
@@ -60,37 +67,32 @@ public class Heuristic {
         return value;
     }
 
+    /**
+     * Must be called before get(White|Black)(Eaten|Remaining) to populate this.num(White|Black)OnBoard
+     */
+    public void calculateNumPawns() {
+        for(int i = 0; i < this.state.getBoard().length; i++) {
+            for (int j = 0; j < this.state.getBoard().length; j++) {
+                if (this.state.getPawn(i, j).equals(State.Pawn.WHITE))
+                    this.numWhiteOnBoard++;
+                if (this.state.getPawn(i, j).equals(State.Pawn.BLACK))
+                    this.numBlackOnBoard++;
+                if (this.state.getPawn(i, j).equals(State.Pawn.KING))
+                    this.kingPosition = new KingPosition(i, j);
+            }
+        }
+    }
 
     /*
     ------------------- WHITE HEURISTIC -------------------
      */
 
     public double getWhiteRemaining() {
-        double white = 0;
-        for(int i = 0; i < this.state.getBoard().length; i++) {
-            for (int j = 0; j < this.state.getBoard().length; j++) {
-                if (this.state.getPawn(i, j).equals(State.Pawn.WHITE))
-                    white++;
-                if (this.state.getPawn(i, j).equals(State.Pawn.KING))
-                    this.kingPosition = new KingPosition(i, j);
-            }
-        }
-
-        return white / NUM_WHITE;
+        return this.numWhiteOnBoard / NUM_WHITE;
     }
 
     public double getBlackEaten() {
-        double black = 0;
-        for(int i = 0; i < this.state.getBoard().length; i++) {
-            for (int j = 0; j < this.state.getBoard().length; j++) {
-                if (this.state.getPawn(i, j).equals(State.Pawn.BLACK))
-                    black++;
-                if (this.state.getPawn(i, j).equals(State.Pawn.KING))
-                    this.kingPosition = new KingPosition(i, j);
-            }
-        }
-
-        return (NUM_BLACK - black) / NUM_BLACK;
+        return (NUM_BLACK - this.numBlackOnBoard) / NUM_BLACK;
     }
 
     public int kingMovesToEscape() {
@@ -232,27 +234,11 @@ public class Heuristic {
      */
 
     public double getBlackRemaining() {
-        double black = 0;
-        for(int i = 0; i < this.state.getBoard().length; i++) {
-            for (int j = 0; j < this.state.getBoard().length; j++) {
-                if (this.state.getPawn(i, j).equals(State.Pawn.BLACK))
-                    black++;
-            }
-        }
-
-        return black / NUM_BLACK;
+        return this.numBlackOnBoard / NUM_BLACK;
     }
 
     public double getWhiteEaten() {
-        double white = 0;
-        for(int i = 0; i < this.state.getBoard().length; i++) {
-            for (int j = 0; j < this.state.getBoard().length; j++) {
-                if (this.state.getPawn(i, j).equals(State.Pawn.WHITE))
-                    white++;
-            }
-        }
-
-        return (NUM_WHITE - white) / NUM_WHITE;
+        return (NUM_WHITE - this.numBlackOnBoard) / NUM_WHITE;
     }
 
 
