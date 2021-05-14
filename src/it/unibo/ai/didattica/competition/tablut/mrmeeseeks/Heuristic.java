@@ -204,9 +204,9 @@ public class Heuristic {
                 State.Pawn pawn = this.state.getPawn(newx, newy);
                 if(pawn.equals(State.Pawn.BLACK))
                     numBlack++;
-                if(pawn.equals(State.Pawn.WHITE))
+                else if(pawn.equals(State.Pawn.WHITE))
                     numWhite++;
-                if(this.isCitadel(newx, newy))
+                else if(this.isCitadel(newx, newy)) //without else, if I'm near a citadel with a black pawn inside this is counted twice
                     numCitadels++;
             }
         }
@@ -238,7 +238,7 @@ public class Heuristic {
     }
 
     public double getWhiteEaten() {
-        return (NUM_WHITE - this.numBlackOnBoard) / NUM_WHITE;
+        return (NUM_WHITE - this.numWhiteOnBoard) / NUM_WHITE;
     }
 
 

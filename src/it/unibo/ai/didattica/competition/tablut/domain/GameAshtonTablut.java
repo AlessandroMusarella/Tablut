@@ -897,9 +897,9 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 		this.movePawn(newState, action);
 
 		if(state.getTurn().equals(State.Turn.WHITE))
-			this.checkCaptureWhite(state, action);
+			this.checkCaptureWhite(newState, action);
 		else if(state.getTurn().equals(State.Turn.BLACK))
-			this.checkCaptureBlack(state, action);
+			this.checkCaptureBlack(newState, action);
 
 
 		return newState;
