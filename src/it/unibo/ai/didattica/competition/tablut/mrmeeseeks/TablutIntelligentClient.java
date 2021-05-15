@@ -35,7 +35,7 @@ public class TablutIntelligentClient extends TablutClient {
         String name = "Hi I'm Mr. Meeseeks, look at me!";
         String ipAddress = "localhost";
         int timeout = 60;
-        // TODO: change the behavior?
+
         if (args.length < 1) {
             System.out.println("You must specify which player you are (WHITE or BLACK)");
             System.exit(-1);
@@ -85,36 +85,33 @@ public class TablutIntelligentClient extends TablutClient {
 
 
             if (this.getPlayer().equals(State.Turn.WHITE)) {
-                // Mio turno
+                // My turn: WHITE
                 if (this.getCurrentState().getTurn().equals(StateTablut.Turn.WHITE)) {
-
                     IterativeDeepeningAlphaBetaSearchWithHeuristic search = new IterativeDeepeningAlphaBetaSearchWithHeuristic(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout - 2);
-
                     Action a = search.makeDecision(state);
 
-                    System.out.println("Mossa scelta: " + a.toString());
+                    System.out.println("Move chosen: " + a.toString());
                     try {
                         this.write(a);
                     } catch (ClassNotFoundException | IOException e) {
                         e.printStackTrace();
                     }
-
                 }
-                // Turno dell'avversario
+                // Opponent's turn: BLACK
                 else if (state.getTurn().equals(StateTablut.Turn.BLACK)) {
                     System.out.println("Waiting for your opponent move... ");
                 }
-                // ho vinto
+                // Win
                 else if (state.getTurn().equals(StateTablut.Turn.WHITEWIN)) {
                     System.out.println("YOU WIN!");
                     System.exit(0);
                 }
-                // ho perso
+                // Lost
                 else if (state.getTurn().equals(StateTablut.Turn.BLACKWIN)) {
                     System.out.println("YOU LOSE!");
                     System.exit(0);
                 }
-                // pareggio
+                // Draw
                 else if (state.getTurn().equals(StateTablut.Turn.DRAW)) {
                     System.out.println("DRAW!");
                     System.exit(0);
@@ -122,31 +119,34 @@ public class TablutIntelligentClient extends TablutClient {
 
             } else {
 
-                // Mio turno
+                // My turn: BLACK
                 if (this.getCurrentState().getTurn().equals(StateTablut.Turn.BLACK)) {
-
                     IterativeDeepeningAlphaBetaSearchWithHeuristic search = new IterativeDeepeningAlphaBetaSearchWithHeuristic(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout - 2);
-
                     Action a = search.makeDecision(state);
 
-                    System.out.println("Mossa scelta: " + a.toString());
+                    System.out.println("Move chosen: " + a.toString());
                     try {
                         this.write(a);
                     } catch (ClassNotFoundException | IOException e) {
                         e.printStackTrace();
                     }
-
                 }
-
+                // Opponent's turn: WHITE
                 else if (state.getTurn().equals(StateTablut.Turn.WHITE)) {
                     System.out.println("Waiting for your opponent move... ");
-                } else if (state.getTurn().equals(StateTablut.Turn.WHITEWIN)) {
+                }
+                // Lost
+                else if (state.getTurn().equals(StateTablut.Turn.WHITEWIN)) {
                     System.out.println("YOU LOSE!");
                     System.exit(0);
-                } else if (state.getTurn().equals(StateTablut.Turn.BLACKWIN)) {
+                }
+                // Win
+                else if (state.getTurn().equals(StateTablut.Turn.BLACKWIN)) {
                     System.out.println("YOU WIN!");
                     System.exit(0);
-                } else if (state.getTurn().equals(StateTablut.Turn.DRAW)) {
+                }
+                // Draw
+                else if (state.getTurn().equals(StateTablut.Turn.DRAW)) {
                     System.out.println("DRAW!");
                     System.exit(0);
                 }

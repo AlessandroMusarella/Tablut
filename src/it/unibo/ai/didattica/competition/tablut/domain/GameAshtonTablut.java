@@ -140,24 +140,12 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 			System.out.println(s.toString());
 
 			if (s.equals(state)) {
-				// DEBUG: //
-				// System.out.println("UGUALI:");
-				// System.out.println("STATO VECCHIO:\t" + s.toLinearString());
-				// System.out.println("STATO NUOVO:\t" +
-				// state.toLinearString());
-
 				trovati++;
 				if (trovati > repeated_moves_allowed) {
 					state.setTurn(State.Turn.DRAW);
 					this.loggGame.fine("Partita terminata in pareggio per numero di stati ripetuti");
 					break;
 				}
-			} else {
-				// DEBUG: //
-				// System.out.println("DIVERSI:");
-				// System.out.println("STATO VECCHIO:\t" + s.toLinearString());
-				// System.out.println("STATO NUOVO:\t" +
-				// state.toLinearString());
 			}
 		}
 		if (trovati > 0) {
@@ -176,16 +164,22 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 		return state;
 	}
 
-	private boolean isLegalMoveBool(State state, Action a) {
-		try {
-			this.isLegalMove(state, a, false);
-			return true;
-		} catch(BoardException | ActionException | StopException | PawnException | DiagonalException | ClimbingException |
-				ThroneException | OccupitedException | ClimbingCitadelException | CitadelException e) {
-			return false;
-		}
-	}
-
+	/**
+	 * Given an action and a state, throws exception if the action is illegal
+	 * @param state The current state
+	 * @param a The action chosen
+	 * @param strictChecking if false remove unnecessary control to increase performance
+	 * @throws BoardException
+	 * @throws ActionException
+	 * @throws StopException
+	 * @throws PawnException
+	 * @throws DiagonalException
+	 * @throws ClimbingException
+	 * @throws ThroneException
+	 * @throws OccupitedException
+	 * @throws ClimbingCitadelException
+	 * @throws CitadelException
+	 */
 	private void isLegalMove(State state, Action a, boolean strictChecking)
 			throws BoardException, ActionException, StopException, PawnException, DiagonalException, ClimbingException,
 			ThroneException, OccupitedException, ClimbingCitadelException, CitadelException {
@@ -340,6 +334,22 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * Call the function isLegalMove, but returns a boolean instead of throwing exception
+	 * @param state
+	 * @param a
+	 * @return
+	 */
+	private boolean isLegalMoveBool(State state, Action a) {
+		try {
+			this.isLegalMove(state, a, false);
+			return true;
+		} catch(BoardException | ActionException | StopException | PawnException | DiagonalException | ClimbingException |
+				ThroneException | OccupitedException | ClimbingCitadelException | CitadelException e) {
+			return false;
 		}
 	}
 
@@ -803,9 +813,9 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 	}
 
 	/**
-	 *
+	 * Return all legal actions from the given state
 	 * @param state The current state
-	 * @return All possible action from the current state
+	 * @return All possible actions from the current state
 	 */
 	@Override
 	public List<Action> getActions(State state) {
@@ -838,6 +848,17 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 		return allActions;
 	}
 
+	/**
+	 * Given the coordinates of a pawn, the direction and the number of tile to move,
+	 * return the corresponding action
+	 * @param state The current state
+	 * @param i The x(?) coordinate
+	 * @param j The y(?) coordinate
+	 * @param dir The direction
+	 * @param numBoxCrossed Numbers of tile to move
+	 * @return The corresponding action
+	 * @throws IOException
+	 */
 	public Action getActionFromIntegers(State state, int i, int j, Direction dir, int numBoxCrossed) throws IOException {
 		String from = state.getBox(i, j);
 		int di = i;
@@ -861,27 +882,6 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 		return new Action(from, to, state.getTurn());
 	}
 
-	private boolean isLegalMoveCustom(State state, Action action) {
-		int x0 = action.getColumnFrom();
-		int y0 = action.getRowFrom();
-		int xf = action.getColumnTo();
-		int yf = action.getRowTo();
-
-		//The board finish
-		if(xf < 0 || xf >= state.getBoard().length || yf < 0 || yf >= state.getBoard().length)
-			return false;
-		else if(!state.getPawn(xf, yf).equals(State.Pawn.EMPTY)) //I go over another Pawn (this comprehend not over CASTLE)
-			return false;
-		else if(!this.citadels.contains(action.getFrom()) && this.citadels.contains(action.getTo())) //If I wasn't in a citadel and I try to enter in a citadel
-			return false;
-		else if (this.citadels.contains(action.getFrom()) && this.citadels.contains(action.getTo())) {//If I was in a citadel and I try to enter in a citadel
-			//I have to check that the two citadels are in the same group
-			//integer division to check that are in the same group. Citadels array must be
-			if(this.citadels.indexOf(action.getFrom()) / 4 != this.citadels.indexOf(action.getFrom()) / 4)
-				return false;
-		}
-		return true;
-	}
 
 	/**
 	 * Executes an action to a state and returns the new state
@@ -905,11 +905,23 @@ public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game
 		return newState;
 	}
 
+	/**
+	 * Given a state, return true if it is terminal, such as win, lost, draw
+	 * @param state
+	 * @return True if the game is ended, false otherwise
+	 */
 	@Override
 	public boolean isTerminal(State state) {
 		return state.getTurn().equals(State.Turn.BLACKWIN) || state.getTurn().equals(State.Turn.WHITEWIN) || state.getTurn().equals(State.Turn.DRAW);
 	}
 
+	/**
+	 * Given a state and a player, return the value given by the heuristic if the state is not terminal,
+	 * positive infinity or negative infinity otherwise
+	 * @param state The current state
+	 * @param turn The current player
+	 * @return The value of the heuristic
+	 */
 	@Override
 	public double getUtility(State state, State.Turn turn) {
 		// if it is a terminal state

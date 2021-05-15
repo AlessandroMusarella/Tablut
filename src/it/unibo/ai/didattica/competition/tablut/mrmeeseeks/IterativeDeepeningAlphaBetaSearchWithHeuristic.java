@@ -19,11 +19,17 @@ public class IterativeDeepeningAlphaBetaSearchWithHeuristic extends IterativeDee
      */
     @Override
     protected double eval(State state, State.Turn turn) {
+        // We need to
         super.eval(state, turn);
 
         return game.getUtility(state, turn);
     }
 
+    /**
+     * Overrided to print the metrics
+     * @param state the current state
+     * @return the action chosen
+     */
     @Override
     public Action makeDecision(State state) {
         Action a = super.makeDecision(state);
