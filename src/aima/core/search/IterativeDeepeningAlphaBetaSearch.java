@@ -2,6 +2,8 @@ package aima.core.search;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 /**
  * Implements an iterative deepening Minimax search with alpha-beta pruning and
@@ -23,9 +25,9 @@ public class IterativeDeepeningAlphaBetaSearch<S, A, P> implements AdversarialSe
     protected double utilMax;
     protected double utilMin;
     protected int currDepthLimit;
-    private boolean heuristicEvaluationUsed; // indicates that non-terminal nodes have been evaluated.
-    private Timer timer;
-    private boolean logEnabled;
+    protected boolean heuristicEvaluationUsed; // indicates that non-terminal nodes have been evaluated.
+    protected Timer timer;
+    protected boolean logEnabled;
 
     private Metrics metrics = new Metrics();
 
@@ -150,9 +152,10 @@ public class IterativeDeepeningAlphaBetaSearch<S, A, P> implements AdversarialSe
             return value;
         }
     }
-
+    public AtomicInteger counter = new AtomicInteger(1);
     private void updateMetrics(int depth) {
         metrics.incrementInt(METRICS_NODES_EXPANDED);
+        counter.getAndIncrement();
         metrics.set(METRICS_MAX_DEPTH, Math.max(metrics.getInt(METRICS_MAX_DEPTH), depth));
     }
 
@@ -218,19 +221,19 @@ public class IterativeDeepeningAlphaBetaSearch<S, A, P> implements AdversarialSe
     ///////////////////////////////////////////////////////////////////////////////////////////
     // nested helper classes
 
-    private static class Timer {
+    protected static class Timer {
         private long duration;
         private long startTime;
 
-        Timer(int maxSeconds) {
+        public Timer(int maxSeconds) {
             this.duration = 1000 * maxSeconds;
         }
 
-        void start() {
+        public void start() {
             startTime = System.currentTimeMillis();
         }
 
-        boolean timeOutOccurred() {
+        public boolean timeOutOccurred() {
             return System.currentTimeMillis() > startTime + duration;
         }
     }
@@ -238,11 +241,11 @@ public class IterativeDeepeningAlphaBetaSearch<S, A, P> implements AdversarialSe
     /**
      * Orders actions by utility.
      */
-    private static class ActionStore<A> {
-        private List<A> actions = new ArrayList<>();
-        private List<Double> utilValues = new ArrayList<>();
+    public static class ActionStore<A> {
+        public List<A> actions = new ArrayList<>();
+        public List<Double> utilValues = new ArrayList<>();
 
-        void add(A action, double utilValue) {
+        public void add(A action, double utilValue) {
             int idx = 0;
             while (idx < actions.size() && utilValue <= utilValues.get(idx))
                 idx++;
@@ -250,7 +253,7 @@ public class IterativeDeepeningAlphaBetaSearch<S, A, P> implements AdversarialSe
             utilValues.add(idx, utilValue);
         }
 
-        int size() {
+        public int size() {
             return actions.size();
         }
     }
