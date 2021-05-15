@@ -23,7 +23,7 @@ import it.unibo.ai.didattica.competition.tablut.mrmeeseeks.Heuristic;
  * @author A. Piretti, Andrea Galassi
  *
  */
-public class GameAshtonTablut implements Game, aima.core.search.adversarial.Game<State, Action, State.Turn> {
+public class GameAshtonTablut implements Game, aima.core.search.Game<State, Action, State.Turn>, aima.core.search.adversarial.Game<State, Action, State.Turn> {
 
 	/**
 	 * Number of repeated states that can occur before a draw

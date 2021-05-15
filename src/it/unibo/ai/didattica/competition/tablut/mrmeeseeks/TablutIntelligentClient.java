@@ -87,7 +87,9 @@ public class TablutIntelligentClient extends TablutClient {
             if (this.getPlayer().equals(State.Turn.WHITE)) {
                 // My turn: WHITE
                 if (this.getCurrentState().getTurn().equals(StateTablut.Turn.WHITE)) {
-                    IterativeDeepeningAlphaBetaSearchWithHeuristic search = new IterativeDeepeningAlphaBetaSearchWithHeuristic(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout - 2);
+
+                    ParallellDeepeningAlphaBetaSearchWithHeuristic search = new ParallellDeepeningAlphaBetaSearchWithHeuristic(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout - 2);
+
                     Action a = search.makeDecision(state);
 
                     System.out.println("Move chosen: " + a.toString());
@@ -121,7 +123,9 @@ public class TablutIntelligentClient extends TablutClient {
 
                 // My turn: BLACK
                 if (this.getCurrentState().getTurn().equals(StateTablut.Turn.BLACK)) {
-                    IterativeDeepeningAlphaBetaSearchWithHeuristic search = new IterativeDeepeningAlphaBetaSearchWithHeuristic(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout - 2);
+
+                    ParallellDeepeningAlphaBetaSearchWithHeuristic search = new ParallellDeepeningAlphaBetaSearchWithHeuristic(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout - 2);
+
                     Action a = search.makeDecision(state);
 
                     System.out.println("Move chosen: " + a.toString());

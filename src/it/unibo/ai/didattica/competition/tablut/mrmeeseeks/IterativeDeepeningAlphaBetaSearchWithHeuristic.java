@@ -1,7 +1,7 @@
 package it.unibo.ai.didattica.competition.tablut.mrmeeseeks;
 
-import aima.core.search.adversarial.Game;
-import aima.core.search.adversarial.IterativeDeepeningAlphaBetaSearch;
+import aima.core.search.Game;
+import aima.core.search.IterativeDeepeningAlphaBetaSearch;
 import it.unibo.ai.didattica.competition.tablut.domain.Action;
 import it.unibo.ai.didattica.competition.tablut.domain.State;
 
