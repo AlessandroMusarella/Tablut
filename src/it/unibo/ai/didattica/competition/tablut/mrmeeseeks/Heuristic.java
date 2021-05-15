@@ -71,6 +71,8 @@ public class Heuristic {
      * Must be called before get(White|Black)(Eaten|Remaining) to populate this.num(White|Black)OnBoard
      */
     public void calculateNumPawns() {
+        numWhiteOnBoard = 0;
+        numBlackOnBoard = 0;
         for(int i = 0; i < this.state.getBoard().length; i++) {
             for (int j = 0; j < this.state.getBoard().length; j++) {
                 if (this.state.getPawn(i, j).equals(State.Pawn.WHITE))
