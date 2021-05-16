@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="Executable">
+    <output-path>$PROJECT_DIR$</output-path>
+    <root id="archive" name="MrMeeseeks.jar">
+      <element id="module-output" name="Tablut" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/jar/aima-core.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/jar/gson-2.2.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/jar/commons-cli-1.4.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
