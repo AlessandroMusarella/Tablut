@@ -16,14 +16,14 @@ public class Heuristic {
     private final static int NUM_WHITE = 8;
 
     // White weights
-    private final double[] whiteWeights = {30, 25, 5, 10};
+    private final double[] whiteWeights = {30, 25, 20, 10};
     private final static int WHITE_REMAINING  = 0;
     private final static int BLACK_EATEN = 1;
     private final static int MOVES_TO_ESCAPE = 2;
     //private final static int PAWNS_NEAR_KING = 3;
 
     // Black weights
-    private final double[] blackWeights = {15, 35, 20, 10};
+    private final double[] blackWeights = {30, 45, 24, 15};
     private final static int BLACK_REMAINING  = 0;
     private final static int WHITE_EATEN = 1;
     private final static int PROTECT_ESCAPES = 2;
@@ -95,7 +95,7 @@ public class Heuristic {
         return (NUM_BLACK - this.numBlackOnBoard) / NUM_BLACK;
     }
 
-    public int kingMovesToEscape() {
+    public double kingMovesToEscape() {
         int cont = 0;
 
         if(this.kingPosition == null)
@@ -167,20 +167,8 @@ public class Heuristic {
 
         }
 
-        return cont;
+        return cont/4.0;
     }
-
-    public boolean isCitadel(int x, int y) {
-        int[][] citadels = {{0, 3}, {0, 4}, {0, 5}, {1, 4}, {3, 0}, {4, 0}, {5, 0}, {4, 1}, {8, 3}, {8, 4},
-                {8, 5}, {7, 4}, {3, 8}, {4, 8}, {5, 8}, {4, 7}};
-
-        for (int[] citadel : citadels) {
-            if (citadel[0] == x && citadel[1] == y)
-                return true;
-        }
-        return false;
-    }
-
 
     public double pawnsNearKing(boolean isWhitePlaying) {
         if(this.kingPosition == null)
@@ -241,17 +229,14 @@ public class Heuristic {
         return (NUM_WHITE - this.numWhiteOnBoard) / NUM_WHITE;
     }
 
-
-
-
-    public double getBlackProtectingEscapes() {
+    public double getBlackProtectingEscapes() {;
         int[][] protectPositions = {{1, 2}, {2, 1}, {6, 1}, {7, 2}, {1, 6}, {2, 7}, {6, 7}, {7, 6}};
         int num = 0;
         for(int[] position : protectPositions) {
             if(this.state.getPawn(position[0], position[1]).equals(State.Pawn.BLACK))
                 num++;
         }
-        return num;
+        return (double)num / (double)protectPositions.length;
     }
 
     /*
@@ -290,5 +275,16 @@ public class Heuristic {
                     ", y=" + y +
                     '}';
         }
+    }
+
+    public boolean isCitadel(int x, int y) {
+        int[][] citadels = {{0, 3}, {0, 4}, {0, 5}, {1, 4}, {3, 0}, {4, 0}, {5, 0}, {4, 1}, {8, 3}, {8, 4},
+                {8, 5}, {7, 4}, {3, 8}, {4, 8}, {5, 8}, {4, 7}};
+
+        for (int[] citadel : citadels) {
+            if (citadel[0] == x && citadel[1] == y)
+                return true;
+        }
+        return false;
     }
 }
