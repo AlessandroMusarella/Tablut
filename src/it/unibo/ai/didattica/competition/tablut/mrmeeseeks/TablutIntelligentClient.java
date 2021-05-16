@@ -90,7 +90,7 @@ public class TablutIntelligentClient extends TablutClient {
                     IterativeDeepeningAlphaBetaSearchWithHeuristic search = new IterativeDeepeningAlphaBetaSearchWithHeuristic(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout - 2);
                     Action a = search.makeDecision(state);
 
-                    System.out.println("Move chosen: " + a.toString());
+                    System.out.println("Chosen move: " + a.toString());
                     try {
                         this.write(a);
                     } catch (ClassNotFoundException | IOException e) {
@@ -124,7 +124,7 @@ public class TablutIntelligentClient extends TablutClient {
                     IterativeDeepeningAlphaBetaSearchWithHeuristic search = new IterativeDeepeningAlphaBetaSearchWithHeuristic(rules, Double.MIN_VALUE, Double.MAX_VALUE, this.timeout - 2);
                     Action a = search.makeDecision(state);
 
-                    System.out.println("Move chosen: " + a.toString());
+                    System.out.println("Chosen move: " + a.toString());
                     try {
                         this.write(a);
                     } catch (ClassNotFoundException | IOException e) {
