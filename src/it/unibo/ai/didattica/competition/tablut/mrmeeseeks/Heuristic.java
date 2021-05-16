@@ -16,14 +16,14 @@ public class Heuristic {
     private final static int NUM_WHITE = 8;
 
     // White weights
-    private final double[] whiteWeights = {30, 25, 20, 10};
+    private final double[] whiteWeights = {30, 25, 5, 10};
     private final static int WHITE_REMAINING  = 0;
     private final static int BLACK_EATEN = 1;
     private final static int MOVES_TO_ESCAPE = 2;
     //private final static int PAWNS_NEAR_KING = 3;
 
     // Black weights
-    private final double[] blackWeights = {30, 45, 24, 15};
+    private final double[] blackWeights = {30, 45, 3, 15};
     private final static int BLACK_REMAINING  = 0;
     private final static int WHITE_EATEN = 1;
     private final static int PROTECT_ESCAPES = 2;
@@ -167,7 +167,7 @@ public class Heuristic {
 
         }
 
-        return cont/4.0;
+        return cont;
     }
 
     public double pawnsNearKing(boolean isWhitePlaying) {
@@ -229,14 +229,14 @@ public class Heuristic {
         return (NUM_WHITE - this.numWhiteOnBoard) / NUM_WHITE;
     }
 
-    public double getBlackProtectingEscapes() {;
+    public int getBlackProtectingEscapes() {;
         int[][] protectPositions = {{1, 2}, {2, 1}, {6, 1}, {7, 2}, {1, 6}, {2, 7}, {6, 7}, {7, 6}};
         int num = 0;
         for(int[] position : protectPositions) {
             if(this.state.getPawn(position[0], position[1]).equals(State.Pawn.BLACK))
                 num++;
         }
-        return (double)num / (double)protectPositions.length;
+        return num;
     }
 
     /*
