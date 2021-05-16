@@ -32,7 +32,7 @@ public class TablutIntelligentClient extends TablutClient {
     public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException {
         int gametype = 4;
         String role = "";
-        String name = "Hi I'm Mr. Meeseeks, look at me!";
+        String name = "MrMeeseeks";
         String ipAddress = "localhost";
         int timeout = 60;
 
